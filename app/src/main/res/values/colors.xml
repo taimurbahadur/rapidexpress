@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#ff984c</color>
+    <color name="colorPrimaryDark">#ffd546</color>
+    <color name="colorAccent">#ff984c</color>
+
+    <color name="gradient_start_color">#ff984c</color>
+    <color name="gradient_end_color">#ffd546</color>
+
+    <color name="navBackground">#55d4c7c1</color>
+
+
+    <!-- colors for tab and screent text -->
+
+    <color name="tab_indicator_gray">#c0c0c0</color>
+    <color name="intro_title_color">#000000</color>
+    <color name="intro_description_color">#656565</color>
+
+
+
+</resources>
