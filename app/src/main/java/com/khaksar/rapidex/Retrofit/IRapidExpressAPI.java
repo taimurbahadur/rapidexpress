@@ -4,6 +4,7 @@ import com.khaksar.rapidex.Model.Banner;
 import com.khaksar.rapidex.Model.Category;
 import com.khaksar.rapidex.Model.CheckUserResponse;
 import com.khaksar.rapidex.Model.CheckUserResponseModel;
+import com.khaksar.rapidex.Model.RegisterModel;
 import com.khaksar.rapidex.Model.User;
 
 import java.util.List;
@@ -23,10 +24,10 @@ public interface IRapidExpressAPI {
 
         @FormUrlEncoded
         @POST("register.php")
-        Call<User> registerNewUser(@Field("phone") String phone,
-                                   @Field("name") String name,
-                                   @Field("address") String address,
-                                   @Field("birthdate") String birthdate);
+        Call<RegisterModel> registerNewUser(@Field("phone") String phone,
+                                            @Field("name") String name,
+                                            @Field("address") String address,
+                                            @Field("birthdate") String birthdate);
 
 
         @FormUrlEncoded

@@ -50,7 +50,6 @@ public class HomeActivity extends AppCompatActivity {
     SliderLayout sliderLayout;
 
     IRapidExpressAPI mService;
-
     RecyclerView list_menu;
 
     //Rxjava
@@ -99,14 +98,14 @@ public class HomeActivity extends AppCompatActivity {
         text_phone = (TextView) headerView.findViewById(R.id.text_phone);
 
         //Set info
-        text_name.setText(Common.currentUser.getName());
-        text_phone.setText(Common.currentUser.getPhone());
+//        text_name.setText(Common.currentUser.getName());
+//        text_phone.setText(Common.currentUser.getPhone());
 
         //Get banner
-        getBannerImage();
+      //  getBannerImage();
 
         //Get menu
-        getMenu();
+        //getMenu();
 
     }
 
@@ -115,12 +114,7 @@ public class HomeActivity extends AppCompatActivity {
         compositeDisposable.add(mService.getMenu()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<Category>>() {
-                    @Override
-                    public void accept(List<Category> categories) throws Exception {
-                        displayMenu(categories);
-                    }
-                }));
+                .subscribe(categories -> displayMenu(categories)));
     }
 
     private void displayMenu(List<Category> categories) {
@@ -133,12 +127,7 @@ public class HomeActivity extends AppCompatActivity {
         compositeDisposable.add(mService.getBanners()
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(new Consumer<List<Banner>>() {
-            @Override
-            public void accept(List<Banner> banners) throws Exception {
-                displayImage(banners);
-            }
-        }));
+        .subscribe(banners -> displayImage(banners)));
     }
     //Ctrl+O
 

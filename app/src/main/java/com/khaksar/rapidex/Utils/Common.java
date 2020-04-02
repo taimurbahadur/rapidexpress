@@ -6,7 +6,7 @@ import com.khaksar.rapidex.Retrofit.RetrofitClient;
 
 public class Common {
     //in Emulator, localhost = 10.0.2.2
-    private static final String BASE_URL = "http://rapidex.pk/";
+    private static final String BASE_URL = "http://rapidex.pk/scripts/";
 
     public static  User currentUser = null;
 
