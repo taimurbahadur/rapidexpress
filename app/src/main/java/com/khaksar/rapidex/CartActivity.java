@@ -120,12 +120,15 @@ public class CartActivity extends AppCompatActivity {
             else if (rdi_other_address.isChecked())
                 orderAddress = edit_other_address.getText().toString();
             else
-                orderAddress = "";
+                orderAddress = strAddress;
 
             //Submit order
-            sendOrderToServer(Common.cartRepository.sumPrice(), orderDetail,
+            sendOrderToServer(
+                    Common.cartRepository.sumPrice(),
+                    orderDetail,
                     cartsList,
-                    orderComment, orderAddress);
+                    orderComment,
+                    orderAddress);
             dialog.dismiss();
         });
 

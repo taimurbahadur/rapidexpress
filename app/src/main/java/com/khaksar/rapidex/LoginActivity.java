@@ -96,7 +96,7 @@ public class LoginActivity extends AppCompatActivity {
         editor.putBoolean("checkLogin", check).apply();
         editor.putString("username", name).apply();
         editor.putString("phone", phone).apply();
-        editor.putString("address", phone).apply();
+        editor.putString("address", address).apply();
         startActivity(new Intent(LoginActivity.this, HomeActivity.class));
     }
 
