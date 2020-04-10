@@ -3,9 +3,9 @@ package com.khaksar.rapidex.Model;
 public class User {
 
     private  String phone;
-    private  String address;
     private  String name;
-    private  String birthdate;
+    private  String email;
+    private  String address;
     private String error_msg;  //It will be empty if user return object.
 
     public User() {
@@ -35,12 +35,12 @@ public class User {
         this.name = name;
     }
 
-    public String getBirthdate() {
-        return birthdate;
+    public String getEmail() {
+        return email;
     }
 
-    public void setBirthdate(String birthdate) {
-        this.birthdate = birthdate;
+    public void setEmail(String birthdate) {
+        this.email = birthdate;
     }
 
     public static String getError_msg() {

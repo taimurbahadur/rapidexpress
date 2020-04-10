@@ -1,5 +1,11 @@
 package com.khaksar.rapidex;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.media.Image;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.daimajia.slider.library.SliderLayout;
@@ -8,8 +14,12 @@ import com.daimajia.slider.library.SliderTypes.TextSliderView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -17,10 +27,14 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.navigation.NavigationView;
 import com.khaksar.rapidex.Adapter.CategoryAdapter;
+import com.khaksar.rapidex.Database.DataSource.CartRepository;
+import com.khaksar.rapidex.Database.Local.CartDataSource;
+import com.khaksar.rapidex.Database.Local.CartDatabase;
 import com.khaksar.rapidex.Model.Banner;
 import com.khaksar.rapidex.Model.Category;
 import com.khaksar.rapidex.Retrofit.IRapidExpressAPI;
 import com.khaksar.rapidex.Utils.Common;
+import com.nex3z.notificationbadge.NotificationBadge;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -30,6 +44,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.Menu;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.HashMap;
@@ -43,6 +59,7 @@ import io.reactivex.schedulers.Schedulers;
 import retrofit2.Callback;
 
 public class HomeActivity extends AppCompatActivity {
+    Button btn_call;
 
     private AppBarConfiguration mAppBarConfiguration;
 
@@ -52,34 +69,60 @@ public class HomeActivity extends AppCompatActivity {
     IRapidExpressAPI mService;
     RecyclerView list_menu;
 
+    NotificationBadge badge;
+    ImageView cart_icon;
+
+
     //Rxjava
     CompositeDisposable compositeDisposable = new CompositeDisposable();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        btn_call = (Button) findViewById(R.id.btn_call);
+
+        btn_call.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intentcall = new Intent(Intent.ACTION_CALL);
+                intentcall.setData(Uri.parse("tel:+923159715145"));
+
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(),
+                        Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    requestpermission();
+                }
+                else {
+                    startActivity(intentcall);
+                }
+            }
+        });
+
+
+
         Toolbar toolbar = findViewById(R.id.toolbar);
 
         mService = Common.getAPI();
 
 
-        list_menu = (RecyclerView)findViewById(R.id.list_menu);
-        list_menu.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false));
+        list_menu = (RecyclerView) findViewById(R.id.list_menu);
+        list_menu.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         list_menu.setHasFixedSize(true);
 
 
-        sliderLayout =(SliderLayout)findViewById(R.id.slider);
+        sliderLayout = (SliderLayout) findViewById(R.id.slider);
 
         setSupportActionBar(toolbar);
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener()
-        {
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         });
+
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
@@ -98,16 +141,29 @@ public class HomeActivity extends AppCompatActivity {
         text_phone = (TextView) headerView.findViewById(R.id.text_phone);
 
         //Set info
-//        text_name.setText(Common.currentUser.getName());
-//        text_phone.setText(Common.currentUser.getPhone());
+       // text_name.setText(Common.currentUser.getName());
+        //text_phone.setText(Common.currentUser.getPhone());
 
         //Get banner
-      //  getBannerImage();
+        getBannerImage();
 
         //Get menu
-        //getMenu();
+        getMenu();
+
+        //Init Database
+        initDB();
 
     }
+
+    private void initDB() {
+        Common.cartDatabase = CartDatabase.getInstance(this);
+        Common.cartRepository = CartRepository.getInstance(CartDataSource.getInstance(Common.cartDatabase.cartDAO()));
+    }
+
+    private void requestpermission(){
+        ActivityCompat.requestPermissions(HomeActivity.this,new String[]{Manifest.permission.CALL_PHONE},1);
+    }
+
 
     private void getMenu() {
 
@@ -118,16 +174,16 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void displayMenu(List<Category> categories) {
-        CategoryAdapter adapter = new CategoryAdapter(this,categories);
+        CategoryAdapter adapter = new CategoryAdapter(this, categories);
         list_menu.setAdapter(adapter);
     }
 
     private void getBannerImage() {
 
         compositeDisposable.add(mService.getBanners()
-        .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(banners -> displayImage(banners)));
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(banners -> displayImage(banners)));
     }
     //Ctrl+O
 
@@ -139,12 +195,11 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void displayImage(List<Banner> banners) {
-        HashMap<String,String> bannerMap = new HashMap<>();
-        for(Banner item:banners)
-            bannerMap.put(item.getName(),item.getLink());
+        HashMap<String, String> bannerMap = new HashMap<>();
+        for (Banner item : banners)
+            bannerMap.put(item.getName(), item.getLink());
 
-        for (String name:bannerMap.keySet())
-        {
+        for (String name : bannerMap.keySet()) {
             TextSliderView textSliderView = new TextSliderView(this);
             textSliderView.description(name)
                     .image(bannerMap.get(name))
@@ -157,8 +212,52 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.home, menu);
+        getMenuInflater().inflate(R.menu.menu_action_bar, menu);
+        View view = menu.findItem(R.id.cart_menu).getActionView();
+        badge = (NotificationBadge)view.findViewById(R.id.badge);
+        cart_icon = (ImageView)view.findViewById(R.id.cart_icon);
+        cart_icon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            startActivity(new Intent(HomeActivity.this,CartActivity.class));
+            }
+        });
+        updateCartCount();
         return true;
+    }
+
+   private void updateCartCount() {
+
+        if(badge == null) return;
+        runOnUiThread(new Runnable() {
+           @Override
+            public void run() {
+               if (Common.cartRepository.countCartItems() == 0)
+                    badge.setVisibility(View.INVISIBLE);
+                else
+                {
+                    badge.setVisibility(View.VISIBLE);
+                    badge.setText(String.valueOf(Common.cartRepository.countCartItems()));
+                }
+            }
+        });
+
+   }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        //Handle action bar item clicks here.
+
+        int id = item.getItemId();
+
+        if(id == R.id.cart_menu){
+            return true;
+        }
+        else if (id == R.id.search_menu) {
+            startActivity(new Intent(HomeActivity.this,SearchActivity.class));
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -168,5 +267,11 @@ public class HomeActivity extends AppCompatActivity {
                 || super.onSupportNavigateUp();
 
 
-        }
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateCartCount();
+    }
+}

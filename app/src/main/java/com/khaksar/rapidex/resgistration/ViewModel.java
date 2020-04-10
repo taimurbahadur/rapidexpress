@@ -26,8 +26,8 @@ import retrofit2.Response;
 public class ViewModel extends AndroidViewModel {
     public MutableLiveData<String> phone = new MutableLiveData<>();
     public MutableLiveData<String> name = new MutableLiveData<>();
+    public MutableLiveData<String> email = new MutableLiveData<>();
     public MutableLiveData<String> address = new MutableLiveData<>();
-    public MutableLiveData<String> birthday = new MutableLiveData<>();
 
     public MutableLiveData<RegisterModel> userRegisterData = new MutableLiveData<>();
 
@@ -50,8 +50,8 @@ public class ViewModel extends AndroidViewModel {
         mService.registerNewUser(
                 phone.getValue(),
                 name.getValue(),
-                address.getValue(),
-                birthday.getValue())
+                email.getValue(),
+                address.getValue())
                 .enqueue(new Callback<RegisterModel>() {
                     @Override
                     public void onResponse(Call<RegisterModel> call, Response<RegisterModel> response) {
@@ -64,6 +64,7 @@ public class ViewModel extends AndroidViewModel {
                             }
                         } else {
                             userRegisterData.setValue(response.body());
+
                         }
                     }
 

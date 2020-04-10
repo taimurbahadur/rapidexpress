@@ -1,6 +1,7 @@
 package com.khaksar.rapidex.Adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,8 +9,11 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.khaksar.rapidex.Interface.IItemClickListener;
 import com.khaksar.rapidex.Model.Category;
+import com.khaksar.rapidex.ProductActivity;
 import com.khaksar.rapidex.R;
+import com.khaksar.rapidex.Utils.Common;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -40,6 +44,19 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryViewHolder>{
                 .into(holder.img_produt);
 
         holder.text_menu_name.setText(categories.get(position).Name);
+
+        //Event
+        holder.setItemClickListener(new IItemClickListener() {
+            @Override
+            public void onClick(View view) {
+                Common.currentCategory = categories.get(position);
+
+                //Start new Activity
+                context.startActivity(new Intent(context, ProductActivity.class));
+
+
+            }
+        });
     }
 
     @Override

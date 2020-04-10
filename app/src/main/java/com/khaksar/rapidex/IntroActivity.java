@@ -115,6 +115,9 @@ public class IntroActivity extends AppCompatActivity {
         // tablayout add change listener
 
 
+        //login api kam za da// neshta pake... copy koma yao min
+
+
         tabIndicator.addOnTabSelectedListener(new TabLayout.BaseOnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#ff984c</color>
-    <color name="colorPrimaryDark">#ffd546</color>
-    <color name="colorAccent">#ff984c</color>
+    <color name="colorPrimary">#ff5368</color>
+    <color name="colorPrimaryDark">#d8003e</color>
+    <color name="colorAccent">#ff5368</color>
 
-    <color name="gradient_start_color">#ff984c</color>
-    <color name="gradient_end_color">#ffd546</color>
+    <color name="gradient_start_color">#d8003e</color>
+    <color name="gradient_end_color">#ff5368</color>
 
     <color name="navBackground">#55d4c7c1</color>
 
