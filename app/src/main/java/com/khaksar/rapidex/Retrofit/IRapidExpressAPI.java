@@ -2,12 +2,13 @@ package com.khaksar.rapidex.Retrofit;
 
 import com.khaksar.rapidex.Model.Banner;
 import com.khaksar.rapidex.Model.Category;
-import com.khaksar.rapidex.Model.CheckUserResponse;
 import com.khaksar.rapidex.Model.CheckUserResponseModel;
-import com.khaksar.rapidex.Model.LoginModel;
+import com.khaksar.rapidex.Model.Order;
+import com.khaksar.rapidex.Model.login.CheckUserDataModel;
 import com.khaksar.rapidex.Model.Product;
 import com.khaksar.rapidex.Model.RegisterModel;
 import com.khaksar.rapidex.Model.User;
+import com.khaksar.rapidex.Model.login.CheckUserResponse;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ public interface IRapidExpressAPI {
 
         @FormUrlEncoded
         @POST("checkuser.php")
-        Call<LoginModel> userLogin(@Field("phone") String phone);
+        Call<CheckUserResponse> userLogin(@Field("phone") String phone);
 
         @FormUrlEncoded
         @POST("register.php")
@@ -55,11 +56,11 @@ public interface IRapidExpressAPI {
 
         @FormUrlEncoded
         @POST("submitorder.php")
-        Call<String> submitOrder(@Field("price") float orderPrice,
-                                 @Field("detail") String detail,
-                                 @Field("comment") String comment,
-                                 @Field("address") String address,
-                                 @Field("phone") String phone);
+        Call<Order> submitOrder(@Field("price") String orderPrice,
+                                @Field("detail") String detail,
+                                @Field("comment") String comment,
+                                @Field("address") String address,
+                                @Field("phone") String phone);
 
 }
 

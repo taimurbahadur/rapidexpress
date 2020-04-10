@@ -2,6 +2,7 @@ package com.khaksar.rapidex;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.Image;
 import android.net.Uri;
@@ -60,7 +61,7 @@ import retrofit2.Callback;
 
 public class HomeActivity extends AppCompatActivity {
     Button btn_call;
-
+    SharedPreferences sharedPreferences;
     private AppBarConfiguration mAppBarConfiguration;
 
     TextView text_name, text_phone;
@@ -72,6 +73,7 @@ public class HomeActivity extends AppCompatActivity {
     NotificationBadge badge;
     ImageView cart_icon;
 
+    private String strName, strPhone;
 
     //Rxjava
     CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -80,9 +82,11 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        sharedPreferences = getSharedPreferences("Rapid Express", MODE_PRIVATE);
+        strName = sharedPreferences.getString("username", "");
+        strPhone = sharedPreferences.getString("phone", "");
 
         btn_call = (Button) findViewById(R.id.btn_call);
-
         btn_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -92,13 +96,11 @@ public class HomeActivity extends AppCompatActivity {
                 if (ActivityCompat.checkSelfPermission(getApplicationContext(),
                         Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                     requestpermission();
-                }
-                else {
+                } else {
                     startActivity(intentcall);
                 }
             }
         });
-
 
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -141,8 +143,8 @@ public class HomeActivity extends AppCompatActivity {
         text_phone = (TextView) headerView.findViewById(R.id.text_phone);
 
         //Set info
-       // text_name.setText(Common.currentUser.getName());
-        //text_phone.setText(Common.currentUser.getPhone());
+        text_name.setText(strName);
+        text_phone.setText(strPhone);
 
         //Get banner
         getBannerImage();
@@ -160,8 +162,8 @@ public class HomeActivity extends AppCompatActivity {
         Common.cartRepository = CartRepository.getInstance(CartDataSource.getInstance(Common.cartDatabase.cartDAO()));
     }
 
-    private void requestpermission(){
-        ActivityCompat.requestPermissions(HomeActivity.this,new String[]{Manifest.permission.CALL_PHONE},1);
+    private void requestpermission() {
+        ActivityCompat.requestPermissions(HomeActivity.this, new String[]{Manifest.permission.CALL_PHONE}, 1);
     }
 
 
@@ -214,47 +216,45 @@ public class HomeActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_action_bar, menu);
         View view = menu.findItem(R.id.cart_menu).getActionView();
-        badge = (NotificationBadge)view.findViewById(R.id.badge);
-        cart_icon = (ImageView)view.findViewById(R.id.cart_icon);
+        badge = (NotificationBadge) view.findViewById(R.id.badge);
+        cart_icon = (ImageView) view.findViewById(R.id.cart_icon);
         cart_icon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            startActivity(new Intent(HomeActivity.this,CartActivity.class));
+                startActivity(new Intent(HomeActivity.this, CartActivity.class));
             }
         });
         updateCartCount();
         return true;
     }
 
-   private void updateCartCount() {
+    private void updateCartCount() {
 
-        if(badge == null) return;
+        if (badge == null) return;
         runOnUiThread(new Runnable() {
-           @Override
+            @Override
             public void run() {
-               if (Common.cartRepository.countCartItems() == 0)
+                if (Common.cartRepository.countCartItems() == 0)
                     badge.setVisibility(View.INVISIBLE);
-                else
-                {
+                else {
                     badge.setVisibility(View.VISIBLE);
                     badge.setText(String.valueOf(Common.cartRepository.countCartItems()));
                 }
             }
         });
 
-   }
+    }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item){
+    public boolean onOptionsItemSelected(MenuItem item) {
         //Handle action bar item clicks here.
 
         int id = item.getItemId();
 
-        if(id == R.id.cart_menu){
+        if (id == R.id.cart_menu) {
             return true;
-        }
-        else if (id == R.id.search_menu) {
-            startActivity(new Intent(HomeActivity.this,SearchActivity.class));
+        } else if (id == R.id.search_menu) {
+            startActivity(new Intent(HomeActivity.this, SearchActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(item);
