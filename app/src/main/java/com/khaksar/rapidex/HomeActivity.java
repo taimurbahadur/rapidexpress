@@ -274,4 +274,6 @@ public class HomeActivity extends AppCompatActivity {
         super.onResume();
         updateCartCount();
     }
+
+    //done
 }
