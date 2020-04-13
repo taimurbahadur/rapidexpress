@@ -62,5 +62,10 @@ public interface IRapidExpressAPI {
                                 @Field("address") String address,
                                 @Field("phone") String phone);
 
+        @FormUrlEncoded
+        @POST("getorder.php")
+        Observable<List<Order>> getOrder(@Field("userPhone") String userPhone,
+                                         @Field("status") String status);
+
 }
 

@@ -1,6 +1,7 @@
 package com.khaksar.rapidex;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -18,7 +19,9 @@ import com.google.android.material.snackbar.Snackbar;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
@@ -27,6 +30,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.khaksar.rapidex.Adapter.CategoryAdapter;
 import com.khaksar.rapidex.Database.DataSource.CartRepository;
 import com.khaksar.rapidex.Database.Local.CartDataSource;
@@ -48,6 +52,7 @@ import android.view.Menu;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.List;
@@ -59,10 +64,14 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Callback;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     Button btn_call;
     SharedPreferences sharedPreferences;
     private AppBarConfiguration mAppBarConfiguration;
+
+    private DrawerLayout drawer;
+    private NavController navController;
+
 
     TextView text_name, text_phone;
     SliderLayout sliderLayout;
@@ -82,6 +91,7 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
         sharedPreferences = getSharedPreferences("Rapid Express", MODE_PRIVATE);
         strName = sharedPreferences.getString("username", "");
         strPhone = sharedPreferences.getString("phone", "");
@@ -116,27 +126,30 @@ public class HomeActivity extends AppCompatActivity {
         sliderLayout = (SliderLayout) findViewById(R.id.slider);
 
         setSupportActionBar(toolbar);
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        // FloatingActionButton fab = findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow,
-                R.id.nav_tools, R.id.nav_share, R.id.nav_send)
+                R.id.nav_home, R.id.nav_show_orders, R.id.nav_slideshow,
+                R.id.nav_settings, R.id.nav_share, R.id.nav_sign_out)
                 .setDrawerLayout(drawer)
                 .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.bringToFront();
+
 
         View headerView = navigationView.getHeaderView(0);
         text_name = (TextView) headerView.findViewById(R.id.text_name);
@@ -272,8 +285,75 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        isBackButtonClicked = false;
         updateCartCount();
     }
 
-    //done
+    //Exit Application when BACK button is clicked
+    boolean isBackButtonClicked = false;
+
+    @Override
+    public void onBackPressed() {
+        if (isBackButtonClicked) {
+            super.onBackPressed();
+            return;
+        }
+        this.isBackButtonClicked = true;
+        Toast.makeText(this, "Please click Back again to exit", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        menuItem.setChecked(true);
+        drawer.closeDrawers();
+        switch (menuItem.getItemId()) {
+            case R.id.nav_home:
+                navController.navigate(R.id.nav_home);
+                break;
+
+            case R.id.nav_sign_out:
+                signOut();
+                break;
+
+            case R.id.nav_show_orders:
+                startActivity(new Intent(HomeActivity.this,ShowOrderActivity.class));
+                break;
+
+        }
+
+        return true;
+    }
+
+    private void signOut() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Exit Application");
+        builder.setMessage("Do you really want to Sign Out?");
+
+        builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                FirebaseAuth.getInstance().signOut();
+
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.clear();
+                editor.apply();
+
+                //clear all activity
+                Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+
+        builder.setPositiveButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.show();
+    }
 }

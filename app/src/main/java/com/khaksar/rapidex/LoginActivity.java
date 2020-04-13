@@ -44,7 +44,7 @@ public class LoginActivity extends AppCompatActivity {
         if (ed_phone.getText().toString().equalsIgnoreCase("Success")) {
             Toast.makeText(this, "User Login Successfully", Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(this, "Sign In", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Sign In Successfully", Toast.LENGTH_SHORT).show();
         }
 
         userLogin(ed_phone.getText().toString());
@@ -97,7 +97,9 @@ public class LoginActivity extends AppCompatActivity {
         editor.putString("username", name).apply();
         editor.putString("phone", phone).apply();
         editor.putString("address", address).apply();
-        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+        Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 
 }

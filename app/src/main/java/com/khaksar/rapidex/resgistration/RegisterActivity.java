@@ -73,12 +73,17 @@ public class RegisterActivity extends AppCompatActivity {
                             }
                         } else if(response.body().getErrorMsg().equals("")) {
                             Toast.makeText(RegisterActivity.this, "User Registered Successfully", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(RegisterActivity.this,HomeActivity.class));
                         }
                         else {
                             Toast.makeText(RegisterActivity.this, ""+response.body().getErrorMsg(), Toast.LENGTH_SHORT).show();
                         }
+                       // startActivity(new Intent(RegisterActivity.this,LoginActivity.class));
+                        Intent intent = new Intent(getApplicationContext(), VerifyPhoneNo.class);
+                        intent.putExtra("phoneNo", strPhone);
+                        startActivity(intent);
+
                     }
+
 
                     @Override
                     public void onFailure(Call<RegisterModel> call, Throwable t) {
@@ -96,9 +101,6 @@ public class RegisterActivity extends AppCompatActivity {
         strEmail = etEmail.getText().toString();
         strAddress = etAddress.getText().toString();
 
-        Intent intent = new Intent(getApplicationContext(), VerifyPhoneNo.class);
-        intent.putExtra("phoneNo", strPhone);
-        startActivity(intent);
 
         if (strPhone.isEmpty()) {
             valide = false;

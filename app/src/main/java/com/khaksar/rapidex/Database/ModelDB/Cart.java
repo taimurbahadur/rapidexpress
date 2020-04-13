@@ -24,4 +24,7 @@ public class Cart {
 
     @ColumnInfo(name="price")
     public double price;
+
+    @ColumnInfo(name="size")
+    public int size;
 }

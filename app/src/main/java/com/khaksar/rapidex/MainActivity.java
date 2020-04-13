@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.khaksar.rapidex.resgistration.RegisterActivity;
 
@@ -25,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (checkAlreadyLoginOrNot()) {
-                    gotoHomeActivity(); //if already loign then it will go to home
+                    gotoHomeActivity(); //if already login then it will go to home
                 } else {
                     gotToLoginActivity(); //else it will load login screen
                 }
@@ -36,11 +37,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void gotToLoginActivity() {
         Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
     }
 
     public void gotoHomeActivity() {
         Intent intent = new Intent(this, HomeActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
     }
 
@@ -49,4 +52,23 @@ public class MainActivity extends AppCompatActivity {
         return sharedPreferences.getBoolean("checkLogin", false);
     }
 
+    //Exit Application when BACK button is clicked
+    boolean isBackButtonClicked = false;
+
+    @Override
+    public void onBackPressed() {
+        if (isBackButtonClicked) {
+            super.onBackPressed();
+            return;
+        }
+        this.isBackButtonClicked = true;
+        Toast.makeText(this, "Please click Back again to exit", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isBackButtonClicked=false;
+
+    }
 }

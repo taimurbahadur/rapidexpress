@@ -68,7 +68,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductViewHolder> {
         holder.setItemClickListener(new IItemClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(context, "Clicked", Toast.LENGTH_SHORT).show();
                 
             }
         });
@@ -148,18 +147,19 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductViewHolder> {
 
         Picasso.with(context).load(productList.get(position).Link).into(img_product_dialog);
         text_product_diaog.setText(new StringBuilder(productList.get(position).Name).append(" x")
-        .append(number).append(Common.sizeOfItem == 0 ? " Size Small":" Size Large").toString());
+                .append(Common.sizeOfItem == 0 ? " Size Small":" Size Large")
+                .append(number).toString());
 
 
         double price =(Double.parseDouble(productList.get(position).Price))* Double.parseDouble(number);
 
         if (Common.sizeOfItem == 1)
-            price+=100;
+            price+=(100*Double.parseDouble(number));
 
-        text_product_price.setText(new StringBuilder("Rs").append(price));
+        final double finalPrice = Math.round(price);
 
+        text_product_price.setText(new StringBuilder("Rs").append(finalPrice));
 
-        double finalPrice = price;
         builder.setNegativeButton("CONFIRM", (dialog, which) -> {
 
 
@@ -168,9 +168,10 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductViewHolder> {
                 //Add to SQLite later
                 //Create new cart item
                 Cart cartItem = new Cart();
-                cartItem.name = text_product_diaog.getText().toString();
+                cartItem.name = productList.get(position).Name;
                 cartItem.amount = Integer.parseInt(number);
                 cartItem.price = finalPrice;
+                cartItem.size = Common.sizeOfItem;
                 cartItem.link = productList.get(position).Link;
 
                 //Add to DB

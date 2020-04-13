@@ -34,14 +34,6 @@
         android:layout_gravity="center"
         android:text="Phone Number" />
 
-    <EditText
-        android:id="@+id/edit_detail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:hint="Detail" />
 
     <EditText
         android:id="@+id/edit_comment"

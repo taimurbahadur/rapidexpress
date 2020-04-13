@@ -2,12 +2,14 @@ package com.khaksar.rapidex;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -17,15 +19,19 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.khaksar.rapidex.Adapter.CartAdapter;
 import com.khaksar.rapidex.Database.ModelDB.Cart;
 import com.khaksar.rapidex.Model.Order;
 import com.khaksar.rapidex.Retrofit.IRapidExpressAPI;
 import com.khaksar.rapidex.Utils.Common;
+import com.khaksar.rapidex.Utils.RecyclerItemTouchHelper;
+import com.khaksar.rapidex.Utils.RecyclerItemTouchHelperListener;
 
 import org.json.JSONObject;
 
@@ -41,16 +47,22 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class CartActivity extends AppCompatActivity {
+public class CartActivity extends AppCompatActivity implements RecyclerItemTouchHelperListener {
 
     RecyclerView recycler_cart;
     Button btn_place_order;
 
+    List<Cart> cartList = new ArrayList<>();
+
     CompositeDisposable compositeDisposable;
     SharedPreferences sharedPreferences;
 
+    CartAdapter cartAdapter;
+
+    RelativeLayout rootLayout;
+
     IRapidExpressAPI mService;
-    private String strAddress, strPhone,strName;
+    private String strAddress,strPhone,strName;
     private List<Cart> cartsList = new ArrayList<>();
 
     @Override
@@ -69,6 +81,9 @@ public class CartActivity extends AppCompatActivity {
         recycler_cart.setLayoutManager(new LinearLayoutManager(this));
         recycler_cart.setHasFixedSize(true);
 
+        ItemTouchHelper.SimpleCallback simpleCallback = new RecyclerItemTouchHelper(0,ItemTouchHelper.LEFT,this);
+        new ItemTouchHelper(simpleCallback).attachToRecyclerView(recycler_cart);
+
         btn_place_order = (Button) findViewById(R.id.btn_place_order);
         btn_place_order.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,6 +92,7 @@ public class CartActivity extends AppCompatActivity {
             }
         });
 
+        rootLayout = (RelativeLayout)findViewById(R.id.rootLayout);
         loadCartItems();
     }
 
@@ -89,11 +105,13 @@ public class CartActivity extends AppCompatActivity {
 
         TextView tvUserName = dialog.findViewById(R.id.user_name);
         TextView tvUserPhone = dialog.findViewById(R.id.user_phone);
+
         EditText edit_comment = (EditText) dialog.findViewById(R.id.edit_comment);
-        EditText edit_detial = (EditText) dialog.findViewById(R.id.edit_detail);
         EditText edit_other_address = (EditText) dialog.findViewById(R.id.edit_other_address);
+
         RadioButton rdi_user_address = (RadioButton) dialog.findViewById(R.id.rdi_user_address);
         RadioButton rdi_other_address = (RadioButton) dialog.findViewById(R.id.rdi_other_address);
+
         Button btnSubmit = dialog.findViewById(R.id.btn_submit);
         Button btnCancel = dialog.findViewById(R.id.btn_cancel);
 
@@ -113,7 +131,6 @@ public class CartActivity extends AppCompatActivity {
 
         btnSubmit.setOnClickListener(v -> {
             final String orderComment = ""+edit_comment.getText().toString();
-            final String orderDetail = ""+edit_detial.getText().toString();
             final String orderAddress;
             if (rdi_user_address.isChecked())
                 orderAddress = strAddress;
@@ -123,12 +140,26 @@ public class CartActivity extends AppCompatActivity {
                 orderAddress = strAddress;
 
             //Submit order
+            compositeDisposable.add(
+                    Common.cartRepository.getCartItems()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(new Consumer<List<Cart>>() {
+                        @Override
+                        public void accept(List<Cart> carts) throws Exception {
+
+
+
+                        }
+                    })
+            );
             sendOrderToServer(
                     Common.cartRepository.sumPrice(),
-                    orderDetail,
                     cartsList,
                     orderComment,
                     orderAddress);
+
+            Common.cartRepository.emptyCart();
             dialog.dismiss();
         });
 
@@ -140,9 +171,12 @@ public class CartActivity extends AppCompatActivity {
 
     }
 
-    private void sendOrderToServer(float sumPrice, String detail, List<Cart> carts, String orderComment, String orderAddress) {
+    private void sendOrderToServer(float sumPrice, List<Cart> carts, String orderComment, String orderAddress) {
 
         if (carts.size() > 0) {
+
+            String detail = new Gson().toJson(carts);
+
             IRapidExpressAPI mService = Common.getAPI();
             mService.submitOrder(String.valueOf(sumPrice), detail, orderComment, orderAddress, strPhone)
                     .enqueue(new Callback<Order>() {
@@ -187,8 +221,9 @@ public class CartActivity extends AppCompatActivity {
     }
 
     private void displayCartItem(List<Cart> carts) {
+        cartList = carts; // For removing cart item
         cartsList = carts;
-        CartAdapter cartAdapter = new CartAdapter(this, carts);
+        cartAdapter = new CartAdapter(this, carts);
         recycler_cart.setAdapter(cartAdapter);
     }
 
@@ -203,4 +238,42 @@ public class CartActivity extends AppCompatActivity {
         compositeDisposable.clear();
         super.onStop();
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadCartItems();
+    }
+
+    @Override
+    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
+        if(viewHolder instanceof CartAdapter.CartViewHolder)
+        {
+            String name = cartList.get(viewHolder.getAdapterPosition()).name;
+
+            final Cart deletedItem = cartList.get(viewHolder.getAdapterPosition());
+            final int deletedIndex = viewHolder.getAdapterPosition();
+
+            //Delete item from adapter
+            cartAdapter.removeItem(deletedIndex);
+            //Delete item from database
+            Common.cartRepository.deleteCartItem(deletedItem);
+
+            Snackbar snackbar = Snackbar.make(rootLayout, new StringBuilder(name).append("Remove from Carts List").toString(),
+                    Snackbar.LENGTH_LONG);
+            snackbar.setAction("UNDO", new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    cartAdapter.restoreItem(deletedItem,deletedIndex);
+                    Common.cartRepository.insertToCart(deletedItem);
+
+                }
+            });
+            snackbar.setActionTextColor(Color.YELLOW);
+            snackbar.show();
+        }
+
+    }
+
+
 }
